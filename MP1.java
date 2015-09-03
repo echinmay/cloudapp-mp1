@@ -3,8 +3,46 @@ import java.lang.reflect.Array;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class MP1 {
+	public class strval implements Comparable<strval> {
+		public strval(String name, Integer value) {
+			this.name = name;
+			this.value = value;
+		}
+		public strval(String name) {
+			this.name = name;
+			this.value = 0;
+		}
+		private String name;
+		private Integer value;
+		//@Override 
+		public int compareTo(strval other) {
+			int i = (other.value).compareTo(this.value);
+			if (i == 0) {
+				return ((this.name).compareTo(other.name));
+			}
+			return i;
+		}
+		public void incrementCount() {
+			this.value += 1;
+		}
+	}
+	Map<String,strval> m = new HashMap<String,strval>();
+	Map<String,Boolean> swords ;
+	
+	private void initswordsmap() {
+		this.swords = new HashMap<String,Boolean>();
+		for (String s : stopWordsArray) {
+			this.swords.put(s, true);
+		}
+	}
+	
     Random generator;
     String userName;
     String inputFileName;
@@ -19,7 +57,7 @@ public class MP1 {
             "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each",
             "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than",
             "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"};
-
+    
     void initialRandomGenerator(String seed) throws NoSuchAlgorithmException {
         MessageDigest messageDigest = MessageDigest.getInstance("SHA");
         messageDigest.update(seed.toLowerCase().trim().getBytes());
@@ -47,13 +85,44 @@ public class MP1 {
     public MP1(String userName, String inputFileName) {
         this.userName = userName;
         this.inputFileName = inputFileName;
+        this.initswordsmap();
     }
 
     public String[] process() throws Exception {
         String[] ret = new String[20];
        
         //TODO
-
+        BufferedReader br = new BufferedReader(new FileReader(this.inputFileName));
+        ArrayList<String> lines = new ArrayList<String>();
+        
+        String line = br.readLine();
+        while(line != null) {
+            lines.add(line);
+            line = br.readLine();
+        }
+        Integer[] interestedIndices = this.getIndexes();
+        for (Integer idx: interestedIndices) {
+        	line = lines.get(idx);
+        	StringTokenizer st = new StringTokenizer(line, delimiters);
+            while(st.hasMoreTokens()) {
+                String tok = st.nextToken().toLowerCase().trim();
+                if (swords.containsKey(tok)) { continue; }
+                if (m.containsKey(tok)) {
+                	strval cur = m.get(tok);
+                	cur.incrementCount();
+                } else {
+                	strval newpair = new strval(tok);
+                	m.put(tok, newpair);
+                }
+            }       
+        }
+        List<strval> strvallist = new ArrayList<strval>(m.values());
+        Collections.sort(strvallist);
+        for (int j = 0; j < 20; j++)
+        {
+        	//System.out.println(strvallist.get(j).name + strvallist.get(j).value);
+        	ret[j] = strvallist.get(j).name;
+        }
         return ret;
     }
 
