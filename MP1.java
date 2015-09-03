@@ -108,8 +108,7 @@ public class MP1 {
                 String tok = st.nextToken().toLowerCase().trim();
                 if (swords.containsKey(tok)) { continue; }
                 if (m.containsKey(tok)) {
-                	strval cur = m.get(tok);
-                	cur.incrementCount();
+                	m.get(tok).incrementCount();
                 } else {
                 	strval newpair = new strval(tok);
                 	m.put(tok, newpair);
